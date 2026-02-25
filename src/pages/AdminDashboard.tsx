@@ -381,15 +381,44 @@ const AdminDashboard = () => {
                       </button>
                     </div>
                     <div className="flex flex-col gap-3 overflow-y-auto pr-1">
-                      {recentNotifs.length > 0 ? recentNotifs.map((n) => (
-                        <div key={n.id} style={{ paddingBottom: '12px', borderBottom: '1px solid var(--gray-100)' }}>
-                          <p style={{ fontWeight: 600, fontSize: '0.85rem', marginBottom: '2px' }}>{n.title}</p>
-                          <p style={{ fontSize: '0.75rem', color: '#64748b' }}>{n.message}</p>
-                          <small style={{ fontSize: '0.65rem', color: '#94a3b8' }}>
-                            {new Date(n.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                          </small>
-                        </div>
-                      )) : (
+                      {recentNotifs.length > 0 ? recentNotifs.map((n) => {
+                        const isAppointment = n.title === 'Novo Agendamento!';
+                        // Parse out TOTAL line for cleaner display
+                        const totalMatch = n.message.match(/VALOR TOTAL: (R\$ [\d,.]+)/);
+                        const total = totalMatch ? totalMatch[1] : null;
+                        const msgWithoutTotal = total ? n.message.replace(` VALOR TOTAL: ${total}`, '') : n.message;
+
+                        return (
+                          <div key={n.id} style={{ 
+                            paddingBottom: '12px', 
+                            borderBottom: '1px solid var(--gray-100)',
+                            borderLeft: isAppointment ? '3px solid var(--primary)' : '3px solid transparent',
+                            paddingLeft: isAppointment ? '8px' : '0'
+                          }}>
+                            <p style={{ fontWeight: 700, fontSize: '0.85rem', marginBottom: '4px', color: isAppointment ? 'var(--primary)' : 'inherit' }}>
+                              {n.title}
+                            </p>
+                            <p style={{ fontSize: '0.75rem', color: '#64748b', lineHeight: 1.5 }}>{msgWithoutTotal}</p>
+                            {total && (
+                              <div style={{ 
+                                marginTop: '6px', 
+                                background: 'var(--primary)', 
+                                color: 'white',
+                                borderRadius: '6px',
+                                padding: '3px 8px',
+                                display: 'inline-block',
+                                fontSize: '0.75rem',
+                                fontWeight: 800
+                              }}>
+                                💰 Total: {total}
+                              </div>
+                            )}
+                            <small style={{ fontSize: '0.65rem', color: '#94a3b8', display: 'block', marginTop: '4px' }}>
+                              {new Date(n.created_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+                            </small>
+                          </div>
+                        );
+                      }) : (
                         <p className="text-center py-8 text-gray-400" style={{ fontSize: '0.85rem' }}>Nenhuma notificação recente.</p>
                       )}
                     </div>
