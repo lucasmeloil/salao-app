@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { supabase } from '../lib/ts/supabase';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Lock, Mail, ChevronRight, Scissors } from 'lucide-react';
+import { Lock, Mail, ChevronRight, Scissors, ArrowLeft } from 'lucide-react';
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -29,7 +29,43 @@ const Login = () => {
 
   return (
     <div className="auth-container">
-      <motion.div 
+
+      {/* Botão Voltar ao Site — fixo no canto superior esquerdo */}
+      <button
+        onClick={() => navigate('/')}
+        style={{
+          position: 'fixed',
+          top: '20px',
+          left: '20px',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '8px',
+          background: 'rgba(255,255,255,0.12)',
+          color: 'white',
+          border: '1px solid rgba(255,255,255,0.25)',
+          borderRadius: '10px',
+          padding: '8px 14px',
+          fontSize: '0.85rem',
+          fontWeight: 600,
+          cursor: 'pointer',
+          backdropFilter: 'blur(8px)',
+          transition: 'all 0.25s ease',
+          zIndex: 10,
+        }}
+        onMouseEnter={e => {
+          (e.currentTarget as HTMLButtonElement).style.background = 'rgba(255,255,255,0.22)';
+          (e.currentTarget as HTMLButtonElement).style.transform = 'translateX(-3px)';
+        }}
+        onMouseLeave={e => {
+          (e.currentTarget as HTMLButtonElement).style.background = 'rgba(255,255,255,0.12)';
+          (e.currentTarget as HTMLButtonElement).style.transform = 'translateX(0)';
+        }}
+      >
+        <ArrowLeft size={16} />
+        Voltar ao site
+      </button>
+
+      <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         className="auth-card"
