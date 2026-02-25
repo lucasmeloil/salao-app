@@ -12,6 +12,7 @@ const Home = () => {
   const [collaborators, setCollaborators] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [bookingStatus, setBookingStatus] = useState<{show: boolean, type: 'success' | 'error'} | null>(null);
+  const [selectedServices, setSelectedServices] = useState<any[]>([]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -28,9 +29,22 @@ const Home = () => {
     fetchData();
   }, []);
 
+  const handleAddService = (serviceId: string) => {
+    if (!serviceId) return;
+    const service = services.find(s => s.id.toString() === serviceId);
+    if (service && !selectedServices.find(prev => prev.id === service.id)) {
+      setSelectedServices([...selectedServices, service]);
+    }
+  };
+
+  const handleRemoveService = (serviceId: number) => {
+    setSelectedServices(selectedServices.filter(s => s.id !== serviceId));
+  };
+
+  const totalPrice = selectedServices.reduce((acc, s) => acc + Number(s.price), 0);
+
   return (
     <div className="home-page">
-      {/* ... (Navbar and Hero remain the same) ... */}
       <nav className="glass" style={{ position: 'fixed', top: 0, width: '100%', zIndex: 1000, padding: '1rem 0' }}>
         <div className="container flex justify-between items-center">
           <div className="flex items-center gap-2">
@@ -74,7 +88,7 @@ const Home = () => {
             <Link to="/admin" className="mobile-nav-link" onClick={() => setIsMenuOpen(false)}>Painel Admin</Link>
             
             <div className="mt-auto flex flex-col gap-4">
-              <button className="btn btn-primary w-full" style={{ padding: '16px' }}>
+              <button className="btn btn-primary w-full" style={{ padding: '16px' }} onClick={() => setIsMenuOpen(false)}>
                 Agendar Agora <Calendar size={18} />
               </button>
               <div className="flex justify-center gap-8 mt-4">
@@ -92,7 +106,7 @@ const Home = () => {
         background: 'linear-gradient(rgba(255,255,255,0.9), rgba(255,255,255,0.9)), url("https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&q=80&w=1920") center/cover'
       }}>
         <div className="container">
-          <div className="grid grid-cols-2 items-center gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 items-center gap-8">
             <motion.div initial={{ opacity: 0, x: -50 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.8 }}>
               <h1 style={{ fontSize: '3.5rem', lineHeight: 1.1, marginBottom: '1.5rem', fontWeight: 700 }}>
                 Realce sua <span style={{ color: 'var(--primary)' }}>Beleza</span> Natural
@@ -111,7 +125,7 @@ const Home = () => {
             </motion.div>
             
             <motion.div initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 1 }} className="flex justify-center">
-              <div style={{ position: 'relative', width: '400px', height: '500px', borderRadius: '30px', overflow: 'hidden', boxShadow: 'var(--shadow-lg)' }}>
+              <div style={{ position: 'relative', width: '400px', height: '500px', borderRadius: '30px', overflow: 'hidden', boxShadow: 'var(--shadow-lg)' }} className="hidden md:block">
                 <img src="https://images.unsplash.com/photo-1562322140-8baeececf3df?auto=format&fit=crop&q=80&w=800" alt="Beleza" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                 <div className="glass" style={{ position: 'absolute', bottom: '20px', left: '20px', right: '20px', padding: '20px', borderRadius: '15px' }}>
                   <div className="flex items-center gap-2 mb-1">
@@ -205,50 +219,115 @@ const Home = () => {
                 e.preventDefault();
                 const form = e.target as any;
                 const clientName = form.name.value;
-                const serviceName = form.service.value;
                 
+                if (selectedServices.length === 0) {
+                  alert('Por favor, selecione ao menos um serviço.');
+                  return;
+                }
+
+                const serviceDetailsString = selectedServices
+                  .map(s => `${s.name} (R$ ${Number(s.price).toFixed(2)})`)
+                  .join(' + ');
+
                 const { error } = await supabase.from('agendamentos').insert([{
                   client_name: clientName,
-                  service: serviceName,
+                  service: serviceDetailsString,
                   date: form.date.value,
                   time: form.time.value,
                   collaborator_id: form.collaborator.value
                 }]);
                 
                 if (!error) {
-                  // Trigger real-time notification for admin
+                  const adminMessage = `${clientName} agendou: ${serviceDetailsString}. VALOR TOTAL: R$ ${totalPrice.toFixed(2)}`;
+                  
                   await addNotification(
                     'Novo Agendamento!',
-                    `${clientName} agendou para ${serviceName}. Verifique no painel.`,
+                    adminMessage,
                     'info'
                   );
                   setBookingStatus({ show: true, type: 'success' });
+                  setSelectedServices([]);
                   form.reset();
                 } else {
                   setBookingStatus({ show: true, type: 'error' });
                 }
               }}>
                 <div className="flex flex-col gap-1">
-                  <input name="name" placeholder="Seu Nome Completo" required />
+                  <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest pl-1 mb-1">Seu Nome</label>
+                  <input name="name" placeholder="Ex: Maria Silva" required />
                 </div>
-                <div className="flex flex-col gap-1">
-                  <select name="service" required>
-                    <option value="">Selecione o Serviço</option>
-                    {services.map(s => <option key={s.id} value={s.name}>{s.name} - R$ {Number(s.price).toFixed(2)}</option>)}
+
+                <div className="flex flex-col gap-3 mt-2">
+                  <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest pl-1">Serviços Desejados</label>
+                  
+                  {selectedServices.length > 0 && (
+                    <div className="flex flex-col gap-2 mb-2">
+                      {selectedServices.map(s => (
+                        <motion.div 
+                          key={s.id}
+                          initial={{ opacity: 0, x: -10 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          className="flex justify-between items-center bg-primary/5 p-3 rounded-xl border border-primary/10"
+                        >
+                          <div className="flex flex-col">
+                            <span className="font-bold text-sm text-gray-800">{s.name}</span>
+                            <span className="text-[10px] text-primary font-bold">R$ {Number(s.price).toFixed(2)}</span>
+                          </div>
+                          <button 
+                            type="button"
+                            onClick={() => handleRemoveService(s.id)}
+                            className="p-1 hover:bg-white rounded-full text-red-500 transition-colors"
+                          >
+                            <X size={16} />
+                          </button>
+                        </motion.div>
+                      ))}
+                      <div className="flex justify-between items-center px-1 pt-2 border-t border-dashed">
+                        <span className="text-xs font-black text-gray-400 uppercase">Total Estimado</span>
+                        <span className="font-black text-lg text-primary">R$ {totalPrice.toFixed(2)}</span>
+                      </div>
+                    </div>
+                  )}
+
+                  <select 
+                    value="" 
+                    onChange={(e) => handleAddService(e.target.value)}
+                    className="bg-gray-50 border-gray-200"
+                    style={{ borderStyle: 'dashed', borderWidth: '2px' }}
+                  >
+                    <option value="">+ Adicionar outro serviço...</option>
+                    {services
+                      .filter(s => !selectedServices.find(prev => prev.id === s.id))
+                      .map(s => (
+                        <option key={s.id} value={s.id}>
+                          {s.name} - R$ {Number(s.price).toFixed(2)}
+                        </option>
+                      ))
+                    }
                   </select>
                 </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <input name="date" type="date" required />
-                  <input name="time" type="time" required />
+
+                <div className="grid grid-cols-2 gap-4 mt-2">
+                  <div className="flex flex-col gap-1">
+                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest pl-1 mb-1">Data</label>
+                    <input name="date" type="date" required />
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest pl-1 mb-1">Horário</label>
+                    <input name="time" type="time" required />
+                  </div>
                 </div>
-                <div className="flex flex-col gap-1">
+
+                <div className="flex flex-col gap-1 mt-2">
+                  <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest pl-1 mb-1">Escolha a Profissional</label>
                   <select name="collaborator" required>
-                    <option value="">Selecione a Profissional</option>
+                    <option value="">Qualquer profissional disponível</option>
                     {collaborators.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
                   </select>
                 </div>
-                <button type="submit" className="btn btn-primary w-full" style={{ padding: '16px', fontWeight: 700, marginTop: '10px' }}>
-                  Confirmar Agendamento
+
+                <button type="submit" className="btn btn-primary w-full shadow-lg shadow-primary/20" style={{ padding: '18px', fontWeight: 800, marginTop: '16px', fontSize: '1rem' }}>
+                  Finalizar Agendamento
                 </button>
               </form>
             </div>
@@ -256,7 +335,6 @@ const Home = () => {
         </div>
       </section>
 
-      {/* Footer */}
       <footer style={{ background: 'var(--dark)', color: 'white', padding: '60px 0 20px' }}>
         <div className="container">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-12 mb-12">
@@ -293,7 +371,6 @@ const Home = () => {
         </div>
       </footer>
 
-      {/* Booking Status Notification Modal */}
       <AnimatePresence>
         {bookingStatus?.show && (
           <div style={{ 
