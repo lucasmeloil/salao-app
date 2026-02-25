@@ -28,23 +28,49 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
   useEffect(() => {
     fetchUnreadCount();
     
+    // Solicita permissão para notificações do sistema (Desktop/Mobile)
+    if ("Notification" in window) {
+      if (Notification.permission !== "granted" && Notification.permission !== "denied") {
+        Notification.requestPermission();
+      }
+    }
+
     // Configura o áudio
     const audio = new Audio('/sounds/notification.mp3');
 
     // Subscribe to new notifications
     const subscription = supabase
-      .channel('public:notifications')
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'notifications' }, payload => {
-        const newNotif = payload.new;
-        
-        // Tenta tocar o som (navegadores podem bloquear sem interação prévia)
-        audio.play().catch(e => console.log("Áudio bloqueado pelo navegador até interação do usuário:", e));
-        
-        // Show toast
-        triggerToast(newNotif.title, newNotif.message, newNotif.type);
-        fetchUnreadCount();
-      })
-      .subscribe();
+      .channel('schema-db-changes')
+      .on(
+        'postgres_changes', 
+        { 
+          event: 'INSERT', 
+          schema: 'public', 
+          table: 'notifications' 
+        }, 
+        payload => {
+          console.log('Nova notificação recebida via Realtime:', payload);
+          const newNotif = payload.new;
+          
+          // 1. Tenta tocar o som
+          audio.play().catch(e => console.log("Áudio bloqueado:", e));
+          
+          // 2. Notificação Nativa do Sistema (Desktop/Celular)
+          if ("Notification" in window && Notification.permission === "granted") {
+            new Notification(newNotif.title, {
+              body: newNotif.message,
+              icon: '/scissors-icon.png' // Certifique-se que existe ou remova
+            });
+          }
+          
+          // 3. Show toast visual interno
+          triggerToast(newNotif.title, newNotif.message, newNotif.type);
+          fetchUnreadCount();
+        }
+      )
+      .subscribe((status) => {
+        console.log('Status da inscrição Realtime:', status);
+      });
 
     return () => {
       supabase.removeChannel(subscription);

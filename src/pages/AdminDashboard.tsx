@@ -317,9 +317,19 @@ const AdminDashboard = () => {
             </div>
           </div>
           
-          <div className="flex items-center gap-6">
-            <div style={{ position: 'relative' }}>
-              <Bell size={20} color="#64748b" className="cursor-pointer" onClick={handleToggleNotifications} />
+            <div className="flex items-center gap-6">
+              <button 
+                onClick={() => {
+                  const audio = new Audio('/sounds/notification.mp3');
+                  audio.play();
+                }}
+                className="btn btn-dark desktop-only"
+                style={{ fontSize: '0.7rem', padding: '4px 8px', background: '#f1f5f9', color: '#64748b', border: '1px solid #e2e8f0' }}
+              >
+                Testar Som
+              </button>
+              <div style={{ position: 'relative' }}>
+                <Bell size={20} color="#64748b" className="cursor-pointer" onClick={handleToggleNotifications} />
               {unreadCount > 0 && (
                 <div style={{ 
                   position: 'absolute', 
