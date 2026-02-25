@@ -16,14 +16,28 @@ const Home = () => {
 
   useEffect(() => {
     const fetchData = async () => {
-      const [servicesRes, collabsRes] = await Promise.all([
-        supabase.from('services').select('*').order('name'),
-        supabase.from('users').select('*').order('name')
-      ]);
-      
-      if (servicesRes.data) setServices(servicesRes.data);
-      if (collabsRes.data) setCollaborators(collabsRes.data);
-      setLoading(false);
+      try {
+        const [servicesRes, collabsRes] = await Promise.all([
+          supabase.from('services').select('*').order('name'),
+          supabase.from('users').select('*').order('name')
+        ]);
+        
+        if (servicesRes.error) {
+          console.error('Erro ao buscar serviços:', servicesRes.error);
+        } else {
+          setServices(servicesRes.data || []);
+        }
+
+        if (collabsRes.error) {
+          console.error('Erro ao buscar colaboradores:', collabsRes.error);
+        } else {
+          setCollaborators(collabsRes.data || []);
+        }
+      } catch (err) {
+        console.error('Erro inesperado ao carregar dados:', err);
+      } finally {
+        setLoading(false);
+      }
     };
 
     fetchData();
@@ -31,14 +45,15 @@ const Home = () => {
 
   const handleAddService = (serviceId: string) => {
     if (!serviceId) return;
-    const service = services.find(s => s.id.toString() === serviceId);
-    if (service && !selectedServices.find(prev => prev.id === service.id)) {
+    // Garantir comparação robusta de ID (string vs number)
+    const service = services.find(s => String(s.id) === String(serviceId));
+    if (service && !selectedServices.find(prev => String(prev.id) === String(service.id))) {
       setSelectedServices([...selectedServices, service]);
     }
   };
 
-  const handleRemoveService = (serviceId: number) => {
-    setSelectedServices(selectedServices.filter(s => s.id !== serviceId));
+  const handleRemoveService = (serviceId: any) => {
+    setSelectedServices(selectedServices.filter(s => String(s.id) !== String(serviceId)));
   };
 
   const totalPrice = selectedServices.reduce((acc, s) => acc + Number(s.price), 0);
