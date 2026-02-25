@@ -122,7 +122,7 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
     <NotificationContext.Provider value={{ addNotification, notifications: toasts, removeNotification, unreadCount, markAllAsRead }}>
       {children}
       {/* Toast Container */}
-      <div style={{ position: 'fixed', bottom: '24px', right: '24px', zIndex: 9999, display: 'flex', flexDirection: 'column', gap: '12px', maxWidth: '400px', width: '100%' }}>
+      <div style={{ position: 'fixed', top: '24px', right: '24px', zIndex: 9999, display: 'flex', flexDirection: 'column', gap: '12px', maxWidth: '400px', width: '100%' }}>
         {toasts.map(toast => (
           <div 
             key={toast.id} 
@@ -139,7 +139,7 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
                 toast.type === 'error' ? '#dc2626' : 
                 toast.type === 'warning' ? '#ca8a04' : '#2563eb'
               }`,
-              animation: 'slideIn 0.3s ease-out'
+              animation: 'slideInTop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)'
             }}
           >
             <div style={{ marginTop: '2px' }}>
@@ -159,9 +159,9 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
         ))}
       </div>
       <style>{`
-        @keyframes slideIn {
-          from { transform: translateX(100%); opacity: 0; }
-          to { transform: translateX(0); opacity: 1; }
+        @keyframes slideInTop {
+          from { transform: translateY(-100%); opacity: 0; }
+          to { transform: translateY(0); opacity: 1; }
         }
       `}</style>
     </NotificationContext.Provider>
