@@ -229,16 +229,18 @@ const Home = () => {
                   .map(s => `${s.name} (R$ ${Number(s.price).toFixed(2)})`)
                   .join(' + ');
 
+                const clientPhone = form.phone.value;
                 const { error } = await supabase.from('agendamentos').insert([{
                   client_name: clientName,
                   service: serviceDetailsString,
                   date: form.date.value,
                   time: form.time.value,
-                  collaborator_id: form.collaborator.value
+                  collaborator_id: form.collaborator.value,
+                  client_phone: clientPhone
                 }]);
                 
                 if (!error) {
-                  const adminMessage = `${clientName} agendou: ${serviceDetailsString}. VALOR TOTAL: R$ ${totalPrice.toFixed(2)}`;
+                  const adminMessage = `${clientName} agendou: ${serviceDetailsString}. VALOR TOTAL: R$ ${totalPrice.toFixed(2)}. WHATSAPP: ${clientPhone}`;
                   
                   await addNotification(
                     'Novo Agendamento!',
@@ -252,9 +254,15 @@ const Home = () => {
                   setBookingStatus({ show: true, type: 'error' });
                 }
               }}>
-                <div className="flex flex-col gap-1">
-                  <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest pl-1 mb-1">Seu Nome</label>
-                  <input name="name" placeholder="Ex: Maria Silva" required />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="flex flex-col gap-1">
+                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest pl-1 mb-1">Seu Nome</label>
+                    <input name="name" placeholder="Ex: Maria Silva" required />
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest pl-1 mb-1">WhatsApp</label>
+                    <input name="phone" placeholder="(73) 99999-9999" required type="tel" />
+                  </div>
                 </div>
 
                 <div className="flex flex-col gap-3 mt-2">

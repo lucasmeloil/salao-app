@@ -360,8 +360,8 @@ const AdminDashboard = () => {
                     position: 'absolute', 
                     top: '40px', 
                     right: '0', 
-                    width: '320px', 
-                    maxHeight: '400px', 
+                    width: '380px', 
+                    maxHeight: '480px', 
                     zIndex: 1001, 
                     borderRadius: '16px', 
                     boxShadow: 'var(--shadow-lg)',
@@ -383,10 +383,13 @@ const AdminDashboard = () => {
                     <div className="flex flex-col gap-3 overflow-y-auto pr-1">
                       {recentNotifs.length > 0 ? recentNotifs.map((n) => {
                         const isAppointment = n.title === 'Novo Agendamento!';
-                        // Parse out TOTAL line for cleaner display
                         const totalMatch = n.message.match(/VALOR TOTAL: (R\$ [\d,.]+)/);
                         const total = totalMatch ? totalMatch[1] : null;
-                        const msgWithoutTotal = total ? n.message.replace(` VALOR TOTAL: ${total}`, '') : n.message;
+                        const phoneMatch = n.message.match(/WHATSAPP: ([\d\s\(\)\-\+]+?)(?:\.|$)/);
+                        const clientPhone = phoneMatch ? phoneMatch[1].trim() : null;
+                        let cleanMsg = n.message;
+                        if (total) cleanMsg = cleanMsg.replace(` VALOR TOTAL: ${totalMatch![0].replace('VALOR TOTAL: ', '')}`, '');
+                        if (clientPhone) cleanMsg = cleanMsg.replace(`. WHATSAPP: ${clientPhone}`, '');
 
                         return (
                           <div key={n.id} style={{ 
@@ -398,21 +401,46 @@ const AdminDashboard = () => {
                             <p style={{ fontWeight: 700, fontSize: '0.85rem', marginBottom: '4px', color: isAppointment ? 'var(--primary)' : 'inherit' }}>
                               {n.title}
                             </p>
-                            <p style={{ fontSize: '0.75rem', color: '#64748b', lineHeight: 1.5 }}>{msgWithoutTotal}</p>
-                            {total && (
-                              <div style={{ 
-                                marginTop: '6px', 
-                                background: 'var(--primary)', 
-                                color: 'white',
-                                borderRadius: '6px',
-                                padding: '3px 8px',
-                                display: 'inline-block',
-                                fontSize: '0.75rem',
-                                fontWeight: 800
-                              }}>
-                                💰 Total: {total}
-                              </div>
-                            )}
+                            <p style={{ fontSize: '0.75rem', color: '#64748b', lineHeight: 1.5 }}>{cleanMsg}</p>
+                            <div className="flex items-center gap-2 mt-2 flex-wrap">
+                              {total && (
+                                <div style={{ 
+                                  background: 'var(--primary)', 
+                                  color: 'white',
+                                  borderRadius: '6px',
+                                  padding: '3px 8px',
+                                  fontSize: '0.72rem',
+                                  fontWeight: 800
+                                }}>
+                                  💰 Total: {total}
+                                </div>
+                              )}
+                              {isAppointment && clientPhone && (
+                                <button
+                                  onClick={() => {
+                                    const cleanPhone = clientPhone.replace(/\D/g, '');
+                                    const phoneWithDDI = cleanPhone.startsWith('55') ? cleanPhone : `55${cleanPhone}`;
+                                    const text = encodeURIComponent(
+                                      `Olá! 😊 Recebemos seu pedido de agendamento no *Salão Nexus* e gostaríamos de confirmar! Em breve entraremos em contato. Obrigada!`
+                                    );
+                                    window.open(`https://wa.me/${phoneWithDDI}?text=${text}`, '_blank');
+                                  }}
+                                  style={{
+                                    background: '#22c55e',
+                                    color: 'white',
+                                    borderRadius: '6px',
+                                    padding: '3px 8px',
+                                    fontSize: '0.72rem',
+                                    fontWeight: 700,
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '4px'
+                                  }}
+                                >
+                                  📲 Confirmar via WhatsApp
+                                </button>
+                              )}
+                            </div>
                             <small style={{ fontSize: '0.65rem', color: '#94a3b8', display: 'block', marginTop: '4px' }}>
                               {new Date(n.created_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
                             </small>
