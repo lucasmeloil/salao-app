@@ -3,8 +3,10 @@ import { Calendar, Phone, Clock, Instagram, Facebook, MapPin, Scissors, Star, Me
 import { Link } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { supabase } from '../lib/ts/supabase';
+import { useNotifications } from '../context/NotificationContext';
 
 const Home = () => {
+  const { addNotification } = useNotifications();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [services, setServices] = useState<any[]>([]);
   const [collaborators, setCollaborators] = useState<any[]>([]);
@@ -202,15 +204,24 @@ const Home = () => {
               <form className="flex flex-col gap-4" onSubmit={async (e) => {
                 e.preventDefault();
                 const form = e.target as any;
+                const clientName = form.name.value;
+                const serviceName = form.service.value;
+                
                 const { error } = await supabase.from('agendamentos').insert([{
-                  client_name: form.name.value,
-                  service: form.service.value,
+                  client_name: clientName,
+                  service: serviceName,
                   date: form.date.value,
                   time: form.time.value,
                   collaborator_id: form.collaborator.value
                 }]);
                 
                 if (!error) {
+                  // Trigger real-time notification for admin
+                  await addNotification(
+                    'Novo Agendamento!',
+                    `${clientName} agendou para ${serviceName}. Verifique no painel.`,
+                    'info'
+                  );
                   setBookingStatus({ show: true, type: 'success' });
                   form.reset();
                 } else {

@@ -28,11 +28,18 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
   useEffect(() => {
     fetchUnreadCount();
     
+    // Configura o áudio
+    const audio = new Audio('/sounds/notification.mp3');
+
     // Subscribe to new notifications
     const subscription = supabase
       .channel('public:notifications')
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'notifications' }, payload => {
         const newNotif = payload.new;
+        
+        // Tenta tocar o som (navegadores podem bloquear sem interação prévia)
+        audio.play().catch(e => console.log("Áudio bloqueado pelo navegador até interação do usuário:", e));
+        
         // Show toast
         triggerToast(newNotif.title, newNotif.message, newNotif.type);
         fetchUnreadCount();
