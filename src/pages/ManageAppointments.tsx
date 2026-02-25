@@ -156,7 +156,10 @@ const ManageAppointments = () => {
   };
 
   const handleConfirmWhatsApp = async (app: any) => {
-    sendWhatsAppConfirmation(app.client_name, app.service, app.date, app.time);
+    const phone = app.client_phone || app.cliente?.phone || '';
+    const totalMatch = app.service?.match(/VALOR TOTAL: (R\$ [\d,.]+)/);
+    const total = totalMatch ? totalMatch[1] : undefined;
+    sendWhatsAppConfirmation(app.client_name || app.cliente?.name || '', app.service, app.date, app.time, phone, total);
     await supabase.from('agendamentos').update({ confirmed_whatsapp: true }).eq('id', app.id);
     fetchData();
   };
