@@ -264,7 +264,7 @@ const AdminDashboard = () => {
       .from('notifications')
       .select('*')
       .order('created_at', { ascending: false })
-      .limit(5);
+      .limit(20);
     setRecentNotifs(data || []);
   };
 
@@ -417,16 +417,13 @@ const AdminDashboard = () => {
               
               {showNotifications && (
                 <>
+                  {/* Overlay para fechar ao clicar fora */}
                   <div 
                     style={{ position: 'fixed', inset: 0, zIndex: 1000 }} 
                     onClick={() => setShowNotifications(false)}
                   ></div>
-                  <div className="glass" style={{ 
-                    position: 'absolute', 
-                    top: '40px', 
-                    right: '0', 
-                    width: '380px', 
-                    maxHeight: '480px', 
+                  {/* Painel de Notificações - responsivo */}
+                  <div className="glass notifications-panel" style={{ 
                     zIndex: 1001, 
                     borderRadius: '16px', 
                     boxShadow: 'var(--shadow-lg)',
@@ -434,9 +431,9 @@ const AdminDashboard = () => {
                     display: 'flex',
                     flexDirection: 'column',
                     gap: '12px',
-                    overflow: 'hidden'
                   }}>
-                    <div className="flex justify-between items-center">
+                    {/* Cabeçalho fixo */}
+                    <div className="flex justify-between items-center" style={{ flexShrink: 0 }}>
                       <span className="font-bold">Notificações</span>
                       <button 
                         onClick={handleMarkRead}
@@ -445,7 +442,17 @@ const AdminDashboard = () => {
                         Marcar todas como lidas
                       </button>
                     </div>
-                    <div className="flex flex-col gap-3 overflow-y-auto pr-1">
+                    {/* Lista com scroll */}
+                    <div style={{
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: '12px',
+                      overflowY: 'auto',
+                      paddingRight: '4px',
+                      flex: 1,
+                      minHeight: 0,
+                      WebkitOverflowScrolling: 'touch',
+                    } as React.CSSProperties}>
                       {recentNotifs.length > 0 ? recentNotifs.map((n) => {
                         const isAppointment = n.title === 'Novo Agendamento!';
                         const totalMatch = n.message.match(/VALOR TOTAL: (R\$ [\d,.]+)/);
@@ -461,7 +468,8 @@ const AdminDashboard = () => {
                             paddingBottom: '12px', 
                             borderBottom: '1px solid var(--gray-100)',
                             borderLeft: isAppointment ? '3px solid var(--primary)' : '3px solid transparent',
-                            paddingLeft: isAppointment ? '8px' : '0'
+                            paddingLeft: isAppointment ? '8px' : '0',
+                            flexShrink: 0
                           }}>
                             <p style={{ fontWeight: 700, fontSize: '0.85rem', marginBottom: '4px', color: isAppointment ? 'var(--primary)' : 'inherit' }}>
                               {n.title}

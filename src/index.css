@@ -382,3 +382,59 @@ input:focus {
   background: var(--dark);
   color: white;
 }
+
+/* =============================
+   Painel de Notificações
+   ============================= */
+.notifications-panel {
+  position: absolute;
+  top: 40px;
+  right: 0;
+  width: 380px;
+  max-height: 480px;
+  overflow: hidden;
+}
+
+/* Scroll suave dentro do painel */
+.notifications-panel > div:last-child {
+  scrollbar-width: thin;
+  scrollbar-color: var(--primary) transparent;
+}
+
+.notifications-panel > div:last-child::-webkit-scrollbar {
+  width: 4px;
+}
+
+.notifications-panel > div:last-child::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.notifications-panel > div:last-child::-webkit-scrollbar-thumb {
+  background: var(--primary);
+  border-radius: 4px;
+}
+
+/* Mobile: painel fixo na tela inteira com margens */
+@media (max-width: 768px) {
+  .notifications-panel {
+    position: fixed;
+    top: 70px;
+    left: 8px;
+    right: 8px;
+    width: auto;
+    max-height: 70vh;
+    max-width: 100%;
+    overflow: hidden;
+  }
+}
+
+/* Telas muito pequenas (ex: 320px) */
+@media (max-width: 375px) {
+  .notifications-panel {
+    top: 64px;
+    left: 4px;
+    right: 4px;
+    max-height: 75vh;
+  }
+}
+
