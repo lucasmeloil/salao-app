@@ -357,7 +357,7 @@ const AdminDashboard = () => {
 
       {/* Main Content */}
       <main className="main-content">
-        <header className="flex justify-between items-center mb-10">
+        <header className="admin-header flex justify-between items-center">
           <div className="flex items-center gap-4">
             <button 
               className="menu-hamburguer-btn mr-4" 
@@ -541,16 +541,18 @@ const AdminDashboard = () => {
 
 
 
-        <Routes>
-          <Route path="/" element={<Overview />} />
-          <Route path="/appointments" element={<ManageAppointments />} />
-          <Route path="/inventory" element={<StockControl />} />
-          <Route path="/finalize" element={<FinalizeService />} />
-          <Route path="/collaborators" element={<Collaborators />} />
-          <Route path="/services" element={<ManageServices />} />
-          <Route path="/customers" element={<ManageCustomers />} />
-          <Route path="/reports" element={<Reports />} />
-        </Routes>
+        <div className="main-content-body">
+          <Routes>
+            <Route path="/" element={<Overview />} />
+            <Route path="/appointments" element={<ManageAppointments />} />
+            <Route path="/inventory" element={<StockControl />} />
+            <Route path="/finalize" element={<FinalizeService />} />
+            <Route path="/collaborators" element={<Collaborators />} />
+            <Route path="/services" element={<ManageServices />} />
+            <Route path="/customers" element={<ManageCustomers />} />
+            <Route path="/reports" element={<Reports />} />
+          </Routes>
+        </div>
       </main>
     </div>
   );

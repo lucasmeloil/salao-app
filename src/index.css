@@ -315,10 +315,27 @@ input:focus {
 
 .main-content {
   background: var(--gray-100);
-  padding: 40px;
   overflow-y: auto;
   transition: var(--transition);
 }
+
+/* Header fixo no admin */
+.admin-header {
+  position: sticky;
+  top: 0;
+  z-index: 900;
+  padding: 20px 40px 16px;
+  margin-bottom: 24px;
+  backdrop-filter: blur(8px);
+  background: rgba(245, 245, 245, 0.95);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+/* Corpo do conteúdo abaixo do header */
+.main-content-body {
+  padding: 0 40px 40px;
+}
+
 
 @media (max-width: 768px) {
   .dashboard-layout {
@@ -341,9 +358,30 @@ input:focus {
   }
   
   .main-content {
-    padding: 20px;
+    padding: 0;
+    padding-bottom: 20px;
   }
-  
+
+  .admin-header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 900;
+    padding: 14px 16px;
+    margin-bottom: 0;
+    background: rgba(245, 245, 245, 0.97);
+    backdrop-filter: blur(10px);
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+  }
+
+  /* Espaço abaixo do header fixo para o conteúdo não ficar escondido */
+  .main-content-body {
+    padding: 20px;
+    padding-top: 80px;
+  }
+
   .sidebar-overlay {
     position: fixed;
     inset: 0;
