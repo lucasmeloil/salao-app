@@ -155,7 +155,7 @@ const Reports = () => {
           ['Quantidade de Servicos', reports.length.toString()],
         ],
         theme: 'grid',
-        headStyles: { fillStyle: 'fill', fillColor: [15, 23, 42] }
+        headStyles: { fillColor: [15, 23, 42] }
       });
 
       // Sales Table

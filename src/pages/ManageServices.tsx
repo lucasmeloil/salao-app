@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../lib/ts/supabase';
-import { Plus, Search, Edit2, Trash2, Clock, DollarSign, X } from 'lucide-react';
+import { Plus, Search, Edit2, Trash2, Clock, DollarSign } from 'lucide-react';
 import { useNotifications } from '../context/NotificationContext';
 
 const ManageServices = () => {
