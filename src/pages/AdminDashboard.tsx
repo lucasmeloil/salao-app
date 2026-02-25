@@ -15,7 +15,8 @@ import {
   Menu,
   ChevronLeft,
   X,
-  UserPlus
+  UserPlus,
+  DollarSign
 } from 'lucide-react';
 import { supabase } from '../lib/ts/supabase';
 import ManageAppointments from './ManageAppointments';
@@ -93,6 +94,7 @@ const Overview = () => {
 
   return (
     <div className="flex flex-col gap-8">
+      {/* Header */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <h2 className="text-2xl md:text-3xl font-extrabold text-gray-900">Resumo Geral</h2>
         <div className="flex gap-4 w-full md:w-auto">
@@ -103,6 +105,79 @@ const Overview = () => {
         </div>
       </div>
 
+      {/* Ações Rápidas - Topo */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        {[
+          { 
+            label: 'Novo Agendamento', 
+            desc: 'Agendar cliente',
+            href: '/admin/appointments', 
+            icon: <Calendar size={22} />,
+            bg: 'linear-gradient(135deg, #c9a04e 0%, #b8860b 100%)',
+            color: '#fff'
+          },
+          { 
+            label: 'Finalizar', 
+            desc: 'Faturar serviço',
+            href: '/admin/finalize', 
+            icon: <DollarSign size={22} />,
+            bg: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)',
+            color: '#fff'
+          },
+          { 
+            label: 'Estoque', 
+            desc: 'Entrada de produtos',
+            href: '/admin/inventory', 
+            icon: <Package size={22} />,
+            bg: 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)',
+            color: '#0f172a'
+          },
+          { 
+            label: 'Relatórios', 
+            desc: 'Visualizar dados',
+            href: '/admin/reports', 
+            icon: <BarChart3 size={22} />,
+            bg: 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)',
+            color: '#0f172a'
+          },
+        ].map((action, i) => (
+          <button 
+            key={i}
+            onClick={() => window.location.href = action.href}
+            style={{ 
+              background: action.bg, 
+              color: action.color, 
+              borderRadius: '16px', 
+              padding: '20px 16px',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              gap: '10px',
+              border: action.color === '#fff' ? 'none' : '1.5px solid #e2e8f0',
+              cursor: 'pointer',
+              transition: 'all 0.2s ease',
+              boxShadow: action.color === '#fff' ? '0 4px 15px rgba(0,0,0,0.15)' : '0 2px 8px rgba(0,0,0,0.05)'
+            }}
+            onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.transform = 'translateY(-3px)'; (e.currentTarget as HTMLButtonElement).style.boxShadow = '0 8px 25px rgba(0,0,0,0.18)'; }}
+            onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.transform = 'translateY(0)'; (e.currentTarget as HTMLButtonElement).style.boxShadow = action.color === '#fff' ? '0 4px 15px rgba(0,0,0,0.15)' : '0 2px 8px rgba(0,0,0,0.05)'; }}
+          >
+            <div style={{ 
+              background: action.color === '#fff' ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.06)',
+              borderRadius: '12px', 
+              padding: '10px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}>
+              {action.icon}
+            </div>
+            <span style={{ fontWeight: 800, fontSize: '0.85rem', letterSpacing: '0.02em' }}>{action.label}</span>
+            <span style={{ fontSize: '0.65rem', opacity: 0.7, fontWeight: 500 }}>{action.desc}</span>
+          </button>
+        ))}
+      </div>
+
+      {/* Stats Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
         {[
           { label: 'Agendamentos Hoje', value: stats.appointmentsCount.toString(), icon: <Calendar color="#2563eb" />, trend: 'Real' },
@@ -120,44 +195,34 @@ const Overview = () => {
         ))}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <div className="card">
-          <h3 className="font-bold mb-4">Próximos Agendamentos</h3>
-          <div className="flex flex-col gap-4">
-            {stats.nextAppointments.length > 0 ? stats.nextAppointments.map((app, i) => (
-              <div key={i} className="flex justify-between items-center p-4" style={{ background: '#f8fafc', borderRadius: '10px' }}>
-                <div className="flex flex-col">
-                  <span className="font-bold">{app.cliente?.name || app.client_name}</span>
-                  <span style={{ fontSize: '0.8rem', color: '#64748b' }}>{app.service} ({app.collaborators?.name || 'Não atribuído'})</span>
-                  <div className="flex items-center gap-2">
-                    <small style={{ color: 'var(--primary)', fontWeight: 600 }}>{new Date(app.date).toLocaleDateString()} às {app.time.slice(0, 5)}</small>
-                    <span className={`badge status-${app.status || 'pending'}`} style={{ 
-                      fontSize: '0.6rem', 
-                      background: app.status === 'finalized' ? '#e0f2fe' : (app.status === 'confirmed' ? '#dcfce7' : '#fef9c3'), 
-                      color: app.status === 'finalized' ? '#0369a1' : (app.status === 'confirmed' ? '#16a34a' : '#a16207'),
-                      padding: '2px 8px',
-                      borderRadius: '12px',
-                      fontWeight: 700,
-                      textTransform: 'uppercase'
-                    }}>
-                      {app.status === 'finalized' ? 'FINALIZADO' : (app.status === 'confirmed' ? 'CONFIRMADO' : 'PENDENTE')}
-                    </span>
-                  </div>
+      {/* Próximos Agendamentos - Full Width */}
+      <div className="card">
+        <h3 className="font-bold mb-4">Próximos Agendamentos</h3>
+        <div className="flex flex-col gap-4">
+          {stats.nextAppointments.length > 0 ? stats.nextAppointments.map((app, i) => (
+            <div key={i} className="flex justify-between items-center p-4" style={{ background: '#f8fafc', borderRadius: '10px' }}>
+              <div className="flex flex-col">
+                <span className="font-bold">{app.cliente?.name || app.client_name}</span>
+                <span style={{ fontSize: '0.8rem', color: '#64748b' }}>{app.service} ({app.collaborators?.name || 'Não atribuído'})</span>
+                <div className="flex items-center gap-2">
+                  <small style={{ color: 'var(--primary)', fontWeight: 600 }}>{new Date(app.date).toLocaleDateString()} às {app.time.slice(0, 5)}</small>
+                  <span className={`badge status-${app.status || 'pending'}`} style={{ 
+                    fontSize: '0.6rem', 
+                    background: app.status === 'finalized' ? '#e0f2fe' : (app.status === 'confirmed' ? '#dcfce7' : '#fef9c3'), 
+                    color: app.status === 'finalized' ? '#0369a1' : (app.status === 'confirmed' ? '#16a34a' : '#a16207'),
+                    padding: '2px 8px',
+                    borderRadius: '12px',
+                    fontWeight: 700,
+                    textTransform: 'uppercase'
+                  }}>
+                    {app.status === 'finalized' ? 'FINALIZADO' : (app.status === 'confirmed' ? 'CONFIRMADO' : 'PENDENTE')}
+                  </span>
                 </div>
               </div>
-            )) : (
-              <div className="p-4 text-center text-gray-400">Nenhum agendamento próximo encontrado.</div>
-            )}
-          </div>
-        </div>
-        <div className="card">
-          <h3 className="font-bold mb-4">Ações Rápidas</h3>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <button onClick={() => window.location.href = '/admin/appointments'} className="btn btn-primary">Novo Agendamento</button>
-            <button onClick={() => window.location.href = '/admin/finalize'} className="btn btn-dark">Finalizar e Faturar</button>
-            <button onClick={() => window.location.href = '/admin/inventory'} className="btn" style={{ border: '1px solid var(--gray-300)' }}>Entrada Estoque</button>
-            <button onClick={() => window.location.href = '/admin/reports'} className="btn" style={{ border: '1px solid var(--gray-300)' }}>Ver Relatórios</button>
-          </div>
+            </div>
+          )) : (
+            <div className="p-4 text-center text-gray-400">Nenhum agendamento próximo encontrado.</div>
+          )}
         </div>
       </div>
     </div>
@@ -421,7 +486,7 @@ const AdminDashboard = () => {
                                     const cleanPhone = clientPhone.replace(/\D/g, '');
                                     const phoneWithDDI = cleanPhone.startsWith('55') ? cleanPhone : `55${cleanPhone}`;
                                     const text = encodeURIComponent(
-                                      `Olá! 😊 Recebemos seu pedido de agendamento no *Salão Nexus* e gostaríamos de confirmar! Em breve entraremos em contato. Obrigada!`
+                                      `Olá! 😊 Recebemos seu pedido de agendamento no *Salão Nexus* e gostaríamos de confirmar! Em breve entraremos em contato para avisar que seu horarío se aproxima. Obrigada!`
                                     );
                                     window.open(`https://wa.me/${phoneWithDDI}?text=${text}`, '_blank');
                                   }}
