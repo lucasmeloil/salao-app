@@ -51,19 +51,28 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
         payload => {
           console.log('Nova notificação recebida via Realtime:', payload);
           const newNotif = payload.new;
+          const isAdminArea = window.location.pathname.startsWith('/admin');
           
-          // 1. Tenta tocar o som
-          audio.play().catch(e => console.log("Áudio bloqueado:", e));
-          
-          // 2. Notificação Nativa do Sistema (Desktop/Celular)
-          if ("Notification" in window && Notification.permission === "granted") {
-            new Notification(newNotif.title, {
-              body: newNotif.message,
-              icon: '/scissors-icon.png' // Certifique-se que existe ou remova
-            });
+          // Se não estiver na área administrativa, apenas atualiza o contador silenciosamente
+          if (!isAdminArea) {
+            fetchUnreadCount();
+            return;
           }
           
-          // 3. Show toast visual interno
+          // 1. Tenta tocar o som (APENAS se for NOVO AGENDAMENTO e no ADMIN)
+          if (newNotif.title === 'Novo Agendamento!') {
+            audio.play().catch(e => console.log("Áudio bloqueado:", e));
+            
+            // 2. Notificação Nativa do Sistema (apenas para agendamentos no Admin)
+            if ("Notification" in window && Notification.permission === "granted") {
+              new Notification(newNotif.title, {
+                body: newNotif.message,
+                icon: '/scissors-icon.png'
+              });
+            }
+          }
+          
+          // 3. Show toast visual interno (Sempre no Admin para feedback de outras ações como 'Serviço Atualizado')
           triggerToast(newNotif.title, newNotif.message, newNotif.type);
           fetchUnreadCount();
         }
